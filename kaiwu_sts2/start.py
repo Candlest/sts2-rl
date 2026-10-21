@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import multiprocessing as mp
+import os
 import subprocess
 import sys
 import time
@@ -20,9 +21,11 @@ import time
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--role", required=True)
+    parser.add_argument("--role", default=os.environ.get("ROLE"))
     args = parser.parse_args()
     role = args.role
+    if not role:
+        parser.error("--role or ROLE env is required")
 
     if role == "smoke":
         from . import smoke

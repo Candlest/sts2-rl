@@ -29,7 +29,7 @@ RUN dotnet publish ./Sts2Emulator/Sts2Emulator.csproj \
       -c Release -r linux-x64 --self-contained -o /out \
  && bash ./relink-linux.sh /build/Sts2Emulator /out
 
-FROM python:3.13-slim AS runtime
+FROM docker.m.daocloud.io/library/python:3.13-slim AS runtime
 ARG TORCH_INDEX=https://download.pytorch.org/whl/cpu
 ARG PIP_INDEX=https://mirrors.aliyun.com/pypi/simple/
 ENV PYTHONUNBUFFERED=1 \
@@ -45,4 +45,4 @@ COPY kaiwu_sts2 /app/kaiwu_sts2
 COPY conf /app/conf
 
 # ROLE selects the process (modelpool | env_server | actor | learner | aisrv | smoke)
-ENTRYPOINT ["python", "/app/kaiwu_sts2/start.py"]
+ENTRYPOINT ["python", "-m", "kaiwu_sts2.start"]

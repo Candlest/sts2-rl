@@ -69,13 +69,12 @@ index fc7b67e..35a7df8 100644
  </Project>
 diff --git a/src/Sts2Emulator/Sts2Emulator.linux.exports b/src/Sts2Emulator/Sts2Emulator.linux.exports
 new file mode 100644
-index 0000000..4bec190
+index 0000000..634a4ae
 --- /dev/null
 +++ b/src/Sts2Emulator/Sts2Emulator.linux.exports
-@@ -0,0 +1,8 @@
-+V1.0 {
+@@ -0,0 +1,7 @@
++{
 +    global:
-+        DotNetRuntimeDebugHeader;
 +        Sts2_*;
 +        Sts2Run_*;
 +        Sts2Emulator_*;

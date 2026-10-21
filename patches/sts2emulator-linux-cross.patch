@@ -1,0 +1,83 @@
+diff --git a/src/Sts2Emulator/Sts2Emulator.csproj b/src/Sts2Emulator/Sts2Emulator.csproj
+index fc7b67e..35a7df8 100644
+--- a/src/Sts2Emulator/Sts2Emulator.csproj
++++ b/src/Sts2Emulator/Sts2Emulator.csproj
+@@ -12,10 +12,12 @@
+   <ItemGroup>
+     <TrimmerRootDescriptor Include="ILLink.Roots.xml" />
+     <UnmanagedEntryPointsAssembly Include="Sts2Emulator" />
+-    <!--
+-      ILC 9.x does not emit export aliases for [UnmanagedCallersOnly] in the primary assembly.
+-      Wire them manually: short public name = NativeAOT mangled internal name.
+-    -->
++  </ItemGroup>
++  <!--
++    ILC 9.x does not emit export aliases for [UnmanagedCallersOnly] in the primary assembly.
++    Wire them manually per platform: short public name = NativeAOT mangled internal name.
++  -->
++  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+     <LinkerArg Include="/EXPORT:Sts2_ObsSize=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ObsSize" />
+     <LinkerArg Include="/EXPORT:Sts2_MaxEnemies=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_MaxEnemies" />
+     <LinkerArg Include="/EXPORT:Sts2_NativeApiVersion=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_NativeApiVersion" />
+@@ -50,4 +52,47 @@
+     <LinkerArg Include="/EXPORT:Sts2Run_GetNicheRngCallCount=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_GetNicheRngCallCount" />
+     <LinkerArg Include="/EXPORT:Sts2Run_Destroy=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_Destroy" />
+   </ItemGroup>
++  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
++    <!--
++      ILC 9.x exports nothing from the primary assembly on ELF (its version
++      script is `local: *`), so override it with one that exports the API
++      symbols. GNU ld honors the LAST version-script flag, and this arg is
++      appended after ILC's default. The defsym entries below create the
++      short public aliases from the ILC-mangled internal names.
++    -->
++    <LinkerArg Include="-Wl,--version-script=Sts2Emulator.linux.exports" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_ObsSize=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ObsSize" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_MaxEnemies=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_MaxEnemies" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_NativeApiVersion=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_NativeApiVersion" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_Create=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_Create" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_Reset=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_Reset" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_ResetEncounter=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ResetEncounter" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_ResetWithDeck=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ResetWithDeck" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_ResetWithDeckAndEncounter=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ResetWithDeckAndEncounter" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_ResetWithDeckEncounterAndRelics=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ResetWithDeckEncounterAndRelics" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_Step=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_Step" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_StepTargeted=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_StepTargeted" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_PlayerWon=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_PlayerWon" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_EncounterId=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_EncounterId" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_ActionCount=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ActionCount" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_ValidActions=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ValidActions" />
++    <LinkerArg Include="-Wl,--defsym,Sts2_Destroy=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_Destroy" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_NativeApiVersion=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_NativeApiVersion" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_ObsSize=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_ObsSize" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_MaxActions=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_MaxActions" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_InfoSize=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_InfoSize" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_Create=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_Create" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_Reset=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_Reset" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_Step=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_Step" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_StartCombat=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_StartCombat" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_ActionMask=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_ActionMask" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_GetInfo=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_GetInfo" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_GetStateList=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_GetStateList" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_GetPhase=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_GetPhase" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_PlayerWon=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_PlayerWon" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_EncounterId=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_EncounterId" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_GetShuffleRngCallCount=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_GetShuffleRngCallCount" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_GetNicheRngCallCount=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_GetNicheRngCallCount" />
++    <LinkerArg Include="-Wl,--defsym,Sts2Run_Destroy=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2Run_Destroy" />
++  </ItemGroup>
+ </Project>
+diff --git a/src/Sts2Emulator/Sts2Emulator.linux.exports b/src/Sts2Emulator/Sts2Emulator.linux.exports
+new file mode 100644
+index 0000000..4bec190
+--- /dev/null
++++ b/src/Sts2Emulator/Sts2Emulator.linux.exports
+@@ -0,0 +1,8 @@
++V1.0 {
++    global:
++        DotNetRuntimeDebugHeader;
++        Sts2_*;
++        Sts2Run_*;
++        Sts2Emulator_*;
++    local: *;
++};

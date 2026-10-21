@@ -1,0 +1,18 @@
+# --- third-party clones (fetch separately, see README) ---
+emulator/
+STS2MCP/
+
+# --- copyrighted / local-only ---
+reference/
+*.7z
+*.bundle
+
+# --- build artifacts & runtime output ---
+venv/
+build-linux/
+runs/
+emulator/out/
+__pycache__/
+*.pyc
+*.pt
+checkpoints/

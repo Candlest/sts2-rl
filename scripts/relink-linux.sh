@@ -9,6 +9,7 @@
 # project-dir contains obj/Release/net9.0/linux-x64/native/Sts2Emulator.o and
 # Sts2Emulator.linux.exports; NuGet packages are under /root/.nuget.
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 PROJECT_DIR="$(cd "${1:?project dir}" && pwd)"
 OUT_DIR="$(cd "${2:?output dir}" && pwd)"
@@ -25,8 +26,11 @@ if [ -z "$ILC_ROOT" ] || [ ! -d "$ILC_ROOT" ]; then
 fi
 
 DEFSYMS=()
+LONG_NAMES=()
 while IFS='=' read -r short long; do
-    [ -n "$short" ] && DEFSYMS+=("-Wl,--defsym,${short}=${long}")
+    [ -n "$short" ] || continue
+    DEFSYMS+=("-Wl,--defsym,${short}=${long}")
+    LONG_NAMES+=("$long")
 done <<'EOF'
 Sts2_ObsSize=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ObsSize
 Sts2_MaxEnemies=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_MaxEnemies
@@ -66,12 +70,21 @@ EOF
 mkdir -p "$OUT_DIR"
 cd "$PROJECT_DIR"
 
+# ILC emits the [UnmanagedCallersOnly] entry points as GLOBAL/HIDDEN symbols.
+# Hidden symbols never reach .dynsym, and HIDDEN breaks PC32 relocations in
+# shared objects unless -Bsymbolic is used. Promote to GLOBAL/DEFAULT on a
+# copy of the object file, then link with -Bsymbolic below.
+OBJ="${NATIVE_DIR}/Sts2Emulator.g.o"
+cp "${NATIVE_DIR}/Sts2Emulator.o" "$OBJ"
+python3 "$SCRIPT_DIR/elf-globalize.py" "$OBJ" "${LONG_NAMES[@]}"
+
 # shellcheck disable=SC2046
-clang "$NATIVE_DIR/Sts2Emulator.o" -o "$OUT_DIR/Sts2Emulator.so" \
+clang "$OBJ" -o "$OUT_DIR/Sts2Emulator.so" \
     -Wl,--version-script=Sts2Emulator.linux.exports \
     -Wl,--export-dynamic \
     "${DEFSYMS[@]}" \
     -gz=zlib -fuse-ld=bfd \
+    -Wl,-Bsymbolic \
     "$ILC_ROOT"sdk/libbootstrapperdll.o \
     "$ILC_ROOT"sdk/libRuntime.WorkstationGC.a \
     "$ILC_ROOT"sdk/libeventpipe-disabled.a \

@@ -16,11 +16,12 @@ RUN set -e; \
     (sed -i 's|deb.debian.org|mirrors.aliyun.com|g; s|security.debian.org|mirrors.aliyun.com|g' \
         /etc/apt/sources.list.d/debian.sources 2>/dev/null || true); \
     apt-get update \
- && apt-get install -y --no-install-recommends clang zlib1g-dev \
+ && apt-get install -y --no-install-recommends clang zlib1g-dev python3 \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
 COPY emulator/src/Sts2Emulator ./Sts2Emulator
 COPY scripts/relink-linux.sh ./relink-linux.sh
+COPY scripts/elf-globalize.py ./elf-globalize.py
 # Publish compiles the AOT object file; the ILC-generated ELF version script
 # hides every export (ILC 9.x limitation), so finish with a manual re-link
 # that exports the Sts2_* API via our own version script + defsym aliases.

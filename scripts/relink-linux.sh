@@ -10,8 +10,8 @@
 # Sts2Emulator.linux.exports; NuGet packages are under /root/.nuget.
 set -euo pipefail
 
-PROJECT_DIR="${1:?project dir}"
-OUT_DIR="${2:?output dir}"
+PROJECT_DIR="$(cd "${1:?project dir}" && pwd)"
+OUT_DIR="$(cd "${2:?output dir}" && pwd)"
 NATIVE_DIR="$PROJECT_DIR/obj/Release/net9.0/linux-x64/native"
 ILC_ROOT="$(echo /root/.nuget/packages/runtime.linux-x64.microsoft.dotnet.ilcompiler/*/ | head -1)"
 

@@ -1,5 +1,5 @@
 diff --git a/src/Sts2Emulator/Sts2Emulator.csproj b/src/Sts2Emulator/Sts2Emulator.csproj
-index fc7b67e..35a7df8 100644
+index fc7b67e..516700d 100644
 --- a/src/Sts2Emulator/Sts2Emulator.csproj
 +++ b/src/Sts2Emulator/Sts2Emulator.csproj
 @@ -12,10 +12,12 @@
@@ -26,12 +26,12 @@ index fc7b67e..35a7df8 100644
 +  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
 +    <!--
 +      ILC 9.x exports nothing from the primary assembly on ELF (its version
-+      script is `local: *`), so override it with one that exports the API
-+      symbols. GNU ld honors the LAST version-script flag, and this arg is
-+      appended after ILC's default. The defsym entries below create the
-+      short public aliases from the ILC-mangled internal names.
++      script is `local: *` and a second version script cannot override it),
++      so `dotnet publish` alone yields a .so with zero dynamic symbols. The
++      build therefore finishes with scripts/relink-linux.sh, which re-runs
++      the final link with our own version script plus the defsym aliases
++      below (short public name = ILC-mangled internal name).
 +    -->
-+    <LinkerArg Include="-Wl,--version-script=Sts2Emulator.linux.exports" />
 +    <LinkerArg Include="-Wl,--defsym,Sts2_ObsSize=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_ObsSize" />
 +    <LinkerArg Include="-Wl,--defsym,Sts2_MaxEnemies=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_MaxEnemies" />
 +    <LinkerArg Include="-Wl,--defsym,Sts2_NativeApiVersion=Sts2Emulator_Sts2Emulator_Interop_NativeExports__Sts2_NativeApiVersion" />

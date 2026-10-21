@@ -20,8 +20,13 @@ RUN set -e; \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
 COPY emulator/src/Sts2Emulator ./Sts2Emulator
+COPY scripts/relink-linux.sh ./relink-linux.sh
+# Publish compiles the AOT object file; the ILC-generated ELF version script
+# hides every export (ILC 9.x limitation), so finish with a manual re-link
+# that exports the Sts2_* API via our own version script + defsym aliases.
 RUN dotnet publish ./Sts2Emulator/Sts2Emulator.csproj \
-      -c Release -r linux-x64 --self-contained -o /out
+      -c Release -r linux-x64 --self-contained -o /out \
+ && bash ./relink-linux.sh /build/Sts2Emulator /out
 
 FROM python:3.13-slim AS runtime
 ARG TORCH_INDEX=https://download.pytorch.org/whl/cpu
